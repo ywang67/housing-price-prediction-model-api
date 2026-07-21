@@ -1,0 +1,27 @@
+# Virtual environments
+.venv/
+.venv.failed/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Test, coverage, lint, and type-check caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Packaging output
+build/
+dist/
+*.egg-info/
+
+# macOS
+.DS_Store

@@ -3,10 +3,11 @@ import { useState } from "react";
 
 export default function EstimatorForm() {
 
+  const [errors, setErrors] = useState<FormErrors>({});
   const [prediction, setPrediction] = useState<number | null>(null);
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
+    event: React.SubmitEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
@@ -23,6 +24,34 @@ export default function EstimatorForm() {
       ),
       school_rating: Number(formData.get("school_rating")),
     };
+
+    const validationErrors: FormErrors = {};
+    if (house.square_footage <= 0) {
+      validationErrors.square_footage =
+        "Square footage must be greater than 0.";
+    }
+    if (house.bedrooms <= 0) {
+      validationErrors.bedrooms = "Bedrooms must be greater than 0.";
+    }
+    if (house.bathrooms <= 0) {
+      validationErrors.bathrooms = "Bathrooms must be greater than 0.";
+    }
+    if (house.year_built < 1800 || house.year_built > 2026) {
+      validationErrors.year_built = "Year built must be between 1800 and 2026.";
+    }
+    if (house.lot_size <= 0) {
+      validationErrors.lot_size = "Lot size must be greater than 0.";
+    }
+    if (house.distance_to_city_center < 0) {
+      validationErrors.distance_to_city_center = "Distance to city center must be a positive number.";
+    }
+    if (house.school_rating < 0 || house.school_rating > 10) {
+      validationErrors.school_rating = "School rating must be between 0 and 10.";
+    }
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
 
     const response = await fetch("/api/estimates", {
       method: "POST",
@@ -47,6 +76,7 @@ export default function EstimatorForm() {
   return (
     <form
       onSubmit={handleSubmit}
+      noValidate
       className="mt-8 grid max-w-3xl grid-cols-1 gap-5 rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-sm sm:grid-cols-2"
     >
       <div className={fieldClassName}>
@@ -62,6 +92,12 @@ export default function EstimatorForm() {
           required
           className={inputClassName}
         />
+
+        {errors.square_footage && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.square_footage}
+          </p>
+        )}
       </div>
 
       <div className={fieldClassName}>
@@ -77,6 +113,11 @@ export default function EstimatorForm() {
           required
           className={inputClassName}
       />
+        {errors.bedrooms && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.bedrooms}
+          </p>
+        )}
       </div>
 
       <div className={fieldClassName}>
@@ -92,6 +133,11 @@ export default function EstimatorForm() {
           required
           className={inputClassName}
       />
+        {errors.bathrooms && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.bathrooms}
+          </p>
+        )}
       </div>
 
       <div className={fieldClassName}>
@@ -108,6 +154,11 @@ export default function EstimatorForm() {
           required
           className={inputClassName}
       />
+        {errors.year_built && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.year_built}
+          </p>
+        )}
       </div>
 
       <div className={fieldClassName}>
@@ -122,21 +173,31 @@ export default function EstimatorForm() {
           required
           className={inputClassName}
       />
+        {errors.lot_size && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.lot_size}
+          </p>
+        )}
       </div>
 
       <div className={fieldClassName}>
         <label htmlFor="distance_to_city_center" className="font-medium text-slate-700">
           Distance to City Center
-      </label>
-      <input
-          id="distance_to_city_center"
-          name="distance_to_city_center"
-          type="number"
-          min="0"
-          step="0.1"
-          required
-          className={inputClassName}
-      />
+        </label>
+        <input
+            id="distance_to_city_center"
+            name="distance_to_city_center"
+            type="number"
+            min="0"
+            step="0.1"
+            required
+            className={inputClassName}
+        />
+        {errors.distance_to_city_center && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.distance_to_city_center}
+          </p>
+        )}
       </div>
 
       <div className={fieldClassName}>
@@ -153,6 +214,11 @@ export default function EstimatorForm() {
           required
           className={inputClassName}
       />
+        {errors.school_rating && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.school_rating}
+          </p>
+        )}
       </div>
 
       <button type="submit" className="cursor-pointer rounded-lg bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500">
@@ -176,3 +242,13 @@ export default function EstimatorForm() {
     </form>
   );
 }
+
+type FormErrors = {
+  square_footage?: string;
+  bedrooms?: string;
+  bathrooms?: string;
+  year_built?: string;
+  lot_size?: string;
+  distance_to_city_center?: string;
+  school_rating?: string;
+};

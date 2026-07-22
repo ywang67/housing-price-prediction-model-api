@@ -4,6 +4,7 @@ import type { MarketProperty, SortKey } from "./types";
 import { useMemo, useState } from "react";
 import MarketCharts from "./market-charts";
 import WhatIfAnalysis from "./what-if-analysis";
+import ExportButtons from "./export-buttons";
 
 type MarketDashboardProps = {
   properties: MarketProperty[];
@@ -91,6 +92,7 @@ export default function MarketDashboard({
             />
         </div>
 
+        <ExportButtons properties={filteredProperties} />
         <MarketCharts properties={filteredProperties} />
 
         <table className="w-full border-collapse text-left text-sm">

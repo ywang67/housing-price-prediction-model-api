@@ -10,9 +10,12 @@ from sklearn.metrics import (
 
 import joblib
 
-DATA_PATH = Path(__file__).resolve().parent / "House Price Dataset.csv"
+SERVICE_ROOT = Path(__file__).resolve().parent
+REPOSITORY_ROOT = SERVICE_ROOT.parent.parent
+
+DATA_PATH = REPOSITORY_ROOT / "data" / "House Price Dataset.csv"
 MODEL_PATH = (
-    Path(__file__).resolve().parent
+    SERVICE_ROOT
     / "artifacts"
     / "housing_price_model.joblib"
 )

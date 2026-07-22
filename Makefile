@@ -1,20 +1,34 @@
-PYTHON := .venv/bin/python
-IMAGE_NAME := housing-price-api
+SYSTEM_PYTHON := python3.12
+VENV_DIR := .venv
+PYTHON := $(VENV_DIR)/bin/python
 
-.PHONY: install train run docker-build docker-run
+ML_SERVICE_DIR := services/ml-api
+ML_IMAGE_NAME := housing-price-api
 
-install:
-	$(PYTHON) -m pip install -r requirements.txt
+.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run
 
-train:
-	$(PYTHON) train_model.py
+venv: $(PYTHON)
 
-run:
-	$(PYTHON) -m uvicorn app.main:app --reload
+$(PYTHON):
+	$(SYSTEM_PYTHON) -m venv $(VENV_DIR)
 
-# make sure docker desktop or orbstack is running before executing the following commands
-docker-build:
-	docker build -t $(IMAGE_NAME) .
+ml-install: $(PYTHON)
+	$(PYTHON) -m pip install -r $(ML_SERVICE_DIR)/requirements.txt
 
-docker-run:
-	docker run --rm -p 8000:8000 $(IMAGE_NAME)
+ml-train: $(PYTHON)
+	$(PYTHON) $(ML_SERVICE_DIR)/train_model.py
+
+ml-run: $(PYTHON)
+	$(PYTHON) -m uvicorn app.main:app \
+		--app-dir $(ML_SERVICE_DIR) \
+		--reload
+
+# Docker Desktop or OrbStack must be running for these targets.
+ml-docker-build:
+	docker build \
+		-f $(ML_SERVICE_DIR)/Dockerfile \
+		-t $(ML_IMAGE_NAME) \
+		.
+
+ml-docker-run:
+	docker run --rm -p 8000:8000 $(ML_IMAGE_NAME)

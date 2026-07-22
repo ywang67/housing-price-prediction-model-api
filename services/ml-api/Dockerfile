@@ -3,17 +3,19 @@ FROM python:3.12.13-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY requirements.txt .
-RUN python -m pip install --no-cache-dir -r requirements.txt
+COPY services/ml-api/requirements.txt ./services/ml-api/requirements.txt
+RUN python -m pip install --no-cache-dir -r services/ml-api/requirements.txt
 
-COPY train_model.py .
-COPY ["House Price Dataset.csv", "./"]
+COPY services/ml-api/train_model.py ./services/ml-api/train_model.py
+COPY data ./data
 
-RUN python train_model.py
+RUN python services/ml-api/train_model.py
 
-COPY app ./app
+COPY services/ml-api/app ./services/ml-api/app
+
+WORKDIR /workspace/services/ml-api
 
 EXPOSE 8000
 

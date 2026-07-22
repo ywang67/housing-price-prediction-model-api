@@ -9,7 +9,9 @@ PORTAL_DIR := apps/portal
 
 PROPERTY_SERVICE_DIR := services/property-api
 
-.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run portal-install portal-run portal-build portal-lint property-install property-run
+MARKET_SERVICE_DIR := services/market-api
+
+.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run portal-install portal-run portal-build portal-lint property-install property-run market-compile market-run
 
 venv: $(PYTHON)
 
@@ -59,3 +61,10 @@ property-run: $(PYTHON)
 		--app-dir $(PROPERTY_SERVICE_DIR) \
 		--reload \
 		--port 8001
+
+# market-api targets
+market-compile:
+	mvn -f $(MARKET_SERVICE_DIR)/pom.xml clean compile
+
+market-run:
+	mvn -f $(MARKET_SERVICE_DIR)/pom.xml spring-boot:run

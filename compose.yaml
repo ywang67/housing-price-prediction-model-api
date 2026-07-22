@@ -1,0 +1,43 @@
+services:
+  ml-api:
+    build:
+      context: .
+      dockerfile: services/ml-api/Dockerfile
+    ports:
+      - "8000:8000"
+
+  property-api:
+    build:
+      context: .
+      dockerfile: services/property-api/Dockerfile
+    environment:
+      ML_API_URL: http://ml-api:8000
+    depends_on:
+      - ml-api
+    ports:
+      - "8001:8001"
+
+  market-api:
+    build:
+      context: .
+      dockerfile: services/market-api/Dockerfile
+    environment:
+      ML_API_URL: http://ml-api:8000
+      MARKET_DATASET_PATH: /app/data/housing.csv
+    depends_on:
+      - ml-api
+    ports:
+      - "8002:8002"
+
+  portal:
+    build:
+      context: .
+      dockerfile: apps/portal/Dockerfile
+    environment:
+      PROPERTY_API_URL: http://property-api:8001
+      MARKET_API_URL: http://market-api:8002
+    depends_on:
+      - property-api
+      - market-api
+    ports:
+      - "3000:3000"

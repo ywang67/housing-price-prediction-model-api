@@ -11,7 +11,9 @@ PROPERTY_SERVICE_DIR := services/property-api
 
 MARKET_SERVICE_DIR := services/market-api
 
-.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run portal-install portal-run portal-build portal-lint property-install property-run market-compile market-run
+MARKET_IMAGE_NAME := property-market-api
+
+.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run portal-install portal-run portal-build portal-lint property-install property-run market-compile market-run market-docker-build market-docker-run compose-up compose-down
 
 venv: $(PYTHON)
 
@@ -68,3 +70,22 @@ market-compile:
 
 market-run:
 	mvn -f $(MARKET_SERVICE_DIR)/pom.xml spring-boot:run
+
+# market-analysis docker build
+market-docker-build:
+	docker build \
+		-f $(MARKET_SERVICE_DIR)/Dockerfile \
+		-t $(MARKET_IMAGE_NAME) \
+		.
+
+market-docker-run:
+	docker run --rm \
+		-p 8002:8002 \
+		-e ML_API_URL=http://host.docker.internal:8000 \
+		$(MARKET_IMAGE_NAME)
+
+compose-up:
+	docker compose up --build
+
+compose-down:
+	docker compose down

@@ -14,12 +14,17 @@ export default function useEstimateHistory() {
     useState<EstimateHistoryItem[]>([]);
 
   useEffect(() => {
-    const storedHistory = localStorage.getItem(STORAGE_KEY);
+    const timeoutId = window.setTimeout(() => {
+        const storedHistory =
+        localStorage.getItem(STORAGE_KEY);
 
-    if (storedHistory) {
-      setHistory(JSON.parse(storedHistory));
-    }
-  }, []);
+        if (storedHistory) {
+        setHistory(JSON.parse(storedHistory));
+        }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+    }, []);
 
   function addEstimateHistory(house: House, prediction: number) {
     const newItem: EstimateHistoryItem = {

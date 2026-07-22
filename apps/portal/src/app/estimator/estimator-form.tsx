@@ -9,6 +9,8 @@ export default function EstimatorForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [prediction, setPrediction] = useState<number | null>(null);
 
+  const [estimatedHouse, setEstimatedHouse] = useState<House | null>(null);
+
   async function handleSubmit(
     event: React.SubmitEvent<HTMLFormElement>,
   ) {
@@ -81,6 +83,7 @@ export default function EstimatorForm() {
       }
 
       setPrediction(result.predictions[0]);
+      setEstimatedHouse(house);
     } catch (error) {
       setRequestError(
         error instanceof Error
@@ -272,6 +275,37 @@ export default function EstimatorForm() {
           </p>
         </section>
       )}
+
+      {prediction !== null && estimatedHouse !== null && (
+        <div className="overflow-x-auto sm:col-span-2">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead className="bg-slate-200 text-slate-700">
+              <tr>
+                <th className="p-3">Square Feet</th>
+                <th className="p-3">Bedrooms</th>
+                <th className="p-3">Bathrooms</th>
+                <th className="p-3">Year Built</th>
+                <th className="p-3">Prediction</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr className="border border-slate-200 bg-white">
+                <td className="p-3">{estimatedHouse.square_footage}</td>
+                <td className="p-3">{estimatedHouse.bedrooms}</td>
+                <td className="p-3">{estimatedHouse.bathrooms}</td>
+                <td className="p-3">{estimatedHouse.year_built}</td>
+                <td className="p-3 font-semibold">
+                  {prediction.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  })}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </form>
   );
 }
@@ -284,4 +318,14 @@ type FormErrors = {
   lot_size?: string;
   distance_to_city_center?: string;
   school_rating?: string;
+};
+
+type House = {
+  square_footage: number;
+  bedrooms: number;
+  bathrooms: number;
+  year_built: number;
+  lot_size: number;
+  distance_to_city_center: number;
+  school_rating: number;
 };

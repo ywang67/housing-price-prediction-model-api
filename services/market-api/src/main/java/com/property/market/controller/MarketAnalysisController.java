@@ -8,6 +8,7 @@ import com.property.market.model.MarketStatistics;
 import com.property.market.service.MarketAnalysisService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -67,5 +68,10 @@ public class MarketAnalysisController {
         @RequestBody PredictionHouse house
     ) {
         return mlPredictionService.predict(house);
+    }
+
+    @GetMapping("/model-info")
+    public Map<String, Object> getModelInfo() {
+        return mlPredictionService.getModelInfo();
     }
 }

@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import MarketDashboard from "./market-dashboard";
 import type { MarketProperty } from "./types";
+import type { FeatureRanges } from "../estimator/types";
 
 type MarketStatistics = {
   propertyCount: number;
@@ -16,7 +17,7 @@ const MARKET_API_URL =
 export default async function MarketAnalysisPage() {
   await connection();
 
-  const [statisticsResponse, propertiesResponse] =
+  const [statisticsResponse, propertiesResponse, modelInfoResponse] =
   await Promise.all([
     fetch(
       `${MARKET_API_URL}/api/market/statistics`,
@@ -26,9 +27,13 @@ export default async function MarketAnalysisPage() {
       `${MARKET_API_URL}/api/market/properties`,
       { cache: "no-store" },
     ),
+    fetch(
+      `${MARKET_API_URL}/api/market/model-info`,
+      { cache: "no-store" },
+    ),
   ]);
 
-  if (!statisticsResponse.ok || !propertiesResponse.ok) {
+  if (!statisticsResponse.ok || !propertiesResponse.ok || !modelInfoResponse.ok) {
     throw new Error("Could not load market data.");
   }
 
@@ -37,6 +42,9 @@ export default async function MarketAnalysisPage() {
 
   const properties: MarketProperty[] =
     await propertiesResponse.json();
+
+  const modelInfo: { feature_ranges: FeatureRanges } =
+    await modelInfoResponse.json();
 
   return (
     <section>
@@ -69,7 +77,10 @@ export default async function MarketAnalysisPage() {
           value={formatCurrency(statistics.maximumPrice)}
         />
       </div>
-      <MarketDashboard properties={properties} />
+      <MarketDashboard
+        properties={properties}
+        featureRanges={modelInfo.feature_ranges}
+      />
     </section>
   );
 }

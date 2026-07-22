@@ -17,7 +17,9 @@ class MLServiceUnavailableError(Exception):
 
 
 class MLServiceResponseError(Exception):
-    pass
+    def __init__(self, status_code: int, detail: str) -> None:
+        self.status_code = status_code
+        super().__init__(detail)
 
 
 async def request_predictions(
@@ -38,8 +40,10 @@ async def request_predictions(
         ) from error
 
     except httpx.HTTPStatusError as error:
+        response_body = error.response.json()
         raise MLServiceResponseError(
-            f"ML API returned status {error.response.status_code}"
+            error.response.status_code,
+            response_body.get("detail", "ML API rejected the request"),
         ) from error
 
     try:
@@ -47,5 +51,20 @@ async def request_predictions(
 
     except (ValueError, ValidationError) as error:
         raise MLServiceResponseError(
+            502,
             "ML API returned an invalid response"
+        ) from error
+
+
+async def request_model_info() -> dict:
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{ML_API_URL}/model-info")
+
+        response.raise_for_status()
+        return response.json()
+
+    except (httpx.RequestError, httpx.HTTPStatusError) as error:
+        raise MLServiceUnavailableError(
+            "Could not load model information"
         ) from error

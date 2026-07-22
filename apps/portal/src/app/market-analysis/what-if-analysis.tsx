@@ -3,11 +3,14 @@
 import { useState } from "react";
 
 import type { MarketProperty } from "./types";
+import type { FeatureRange } from "../estimator/types";
 
 export default function WhatIfAnalysis({
   properties,
+  squareFootageRange,
 }: {
   properties: MarketProperty[];
+  squareFootageRange: FeatureRange;
 }) {
   const [selectedId, setSelectedId] = useState(
     properties[0]?.id ?? 0,
@@ -48,6 +51,18 @@ export default function WhatIfAnalysis({
       return;
     }
 
+    const requestedSquareFootage = Number(squareFootage);
+
+    if (
+      requestedSquareFootage < squareFootageRange.minimum ||
+      requestedSquareFootage > squareFootageRange.maximum
+    ) {
+      setError(
+        `Square footage must be between ${squareFootageRange.minimum} and ${squareFootageRange.maximum}.`,
+      );
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -58,7 +73,7 @@ export default function WhatIfAnalysis({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          square_footage: Number(squareFootage),
+          square_footage: requestedSquareFootage,
           bedrooms: selectedProperty.bedrooms,
           bathrooms: selectedProperty.bathrooms,
           year_built: selectedProperty.yearBuilt,
@@ -120,7 +135,8 @@ export default function WhatIfAnalysis({
 
         <input
           type="number"
-          min="1"
+          min={squareFootageRange.minimum}
+          max={squareFootageRange.maximum}
           required
           value={squareFootage}
           onChange={(event) =>

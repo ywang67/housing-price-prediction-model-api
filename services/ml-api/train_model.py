@@ -92,6 +92,13 @@ def main() -> None:
     model_artifact = {
         "model": model,
         "feature_columns": FEATURE_COLUMNS,
+        "feature_ranges": {
+            feature: {
+                "minimum": float(X[feature].min()),
+                "maximum": float(X[feature].max()),
+            }
+            for feature in FEATURE_COLUMNS
+        },
         "metrics": {
             "mae": mae,
             "rmse": rmse,

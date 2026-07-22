@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, status
 from app.ml_client import (
     MLServiceResponseError,
     MLServiceUnavailableError,
+    request_model_info,
     request_predictions,
 )
 from app.schemas import EstimateRequest, EstimateResponse
@@ -31,6 +32,17 @@ async def create_estimate(
 
     except MLServiceResponseError as error:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
+            status_code=error.status_code,
+            detail=str(error),
+        ) from error
+
+
+@app.get("/model-info")
+async def model_info() -> dict:
+    try:
+        return await request_model_info()
+    except MLServiceUnavailableError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(error),
         ) from error

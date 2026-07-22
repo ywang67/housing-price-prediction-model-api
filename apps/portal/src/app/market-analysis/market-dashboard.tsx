@@ -5,13 +5,16 @@ import { useMemo, useState } from "react";
 import MarketCharts from "./market-charts";
 import WhatIfAnalysis from "./what-if-analysis";
 import ExportButtons from "./export-buttons";
+import type { FeatureRanges } from "../estimator/types";
 
 type MarketDashboardProps = {
   properties: MarketProperty[];
+  featureRanges: FeatureRanges;
 };
 
 export default function MarketDashboard({
   properties,
+  featureRanges,
 }: MarketDashboardProps) {
     const [minimumPrice, setMinimumPrice] = useState("");
     const [maximumPrice, setMaximumPrice] = useState("");
@@ -62,7 +65,10 @@ export default function MarketDashboard({
             Market Properties
         </h2>
 
-        <WhatIfAnalysis properties={properties} />
+        <WhatIfAnalysis
+          properties={properties}
+          squareFootageRange={featureRanges.square_footage}
+        />
 
         <div className="mb-6 grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-3">
             <input

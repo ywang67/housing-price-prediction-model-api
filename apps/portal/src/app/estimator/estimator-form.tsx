@@ -1,10 +1,14 @@
 "use client";
 import { useState } from "react";
 import PredictionChart from "./prediction-chart";
-import { House } from "./types";
+import type { FeatureRanges, House } from "./types";
 import useEstimateHistory from "./use-estimate-history";
 
-export default function EstimatorForm() {
+export default function EstimatorForm({
+  featureRanges,
+}: {
+  featureRanges: FeatureRanges;
+}) {
   const { history, addEstimateHistory } = useEstimateHistory();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -37,27 +41,24 @@ export default function EstimatorForm() {
     };
 
     const validationErrors: FormErrors = {};
-    if (house.square_footage <= 0) {
-      validationErrors.square_footage =
-        "Square footage must be greater than 0.";
-    }
-    if (house.bedrooms <= 0) {
-      validationErrors.bedrooms = "Bedrooms must be greater than 0.";
-    }
-    if (house.bathrooms <= 0) {
-      validationErrors.bathrooms = "Bathrooms must be greater than 0.";
-    }
-    if (house.year_built < 1800 || house.year_built > 2026) {
-      validationErrors.year_built = "Year built must be between 1800 and 2026.";
-    }
-    if (house.lot_size <= 0) {
-      validationErrors.lot_size = "Lot size must be greater than 0.";
-    }
-    if (house.distance_to_city_center < 0) {
-      validationErrors.distance_to_city_center = "Distance to city center must be a positive number.";
-    }
-    if (house.school_rating < 0 || house.school_rating > 10) {
-      validationErrors.school_rating = "School rating must be between 0 and 10.";
+    const labels: Record<keyof House, string> = {
+      square_footage: "Square footage",
+      bedrooms: "Bedrooms",
+      bathrooms: "Bathrooms",
+      year_built: "Year built",
+      lot_size: "Lot size",
+      distance_to_city_center: "Distance to city center",
+      school_rating: "School rating",
+    };
+
+    for (const feature of Object.keys(house) as (keyof House)[]) {
+      const value = house[feature];
+      const range = featureRanges[feature];
+
+      if (value < range.minimum || value > range.maximum) {
+        validationErrors[feature] =
+          `${labels[feature]} must be between ${range.minimum} and ${range.maximum}.`;
+      }
     }
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
@@ -142,7 +143,8 @@ export default function EstimatorForm() {
             id="square_footage"
             name="square_footage"
             type="number"
-            min="1"
+            min={featureRanges.square_footage.minimum}
+            max={featureRanges.square_footage.maximum}
             required
             className={inputClassName}
           />
@@ -162,7 +164,8 @@ export default function EstimatorForm() {
             id="bedrooms"
             name="bedrooms"
             type="number"
-            min="1"
+            min={featureRanges.bedrooms.minimum}
+            max={featureRanges.bedrooms.maximum}
             step="1"
             required
             className={inputClassName}
@@ -182,7 +185,8 @@ export default function EstimatorForm() {
             id="bathrooms"
             name="bathrooms"
             type="number"
-            min="0.5"
+            min={featureRanges.bathrooms.minimum}
+            max={featureRanges.bathrooms.maximum}
             step="0.5"
             required
             className={inputClassName}
@@ -202,8 +206,8 @@ export default function EstimatorForm() {
             id="year_built"
             name="year_built"
             type="number"
-            min="1800"
-            max="2026"
+            min={featureRanges.year_built.minimum}
+            max={featureRanges.year_built.maximum}
             step="1"
             required
             className={inputClassName}
@@ -223,7 +227,8 @@ export default function EstimatorForm() {
             id="lot_size"
             name="lot_size"
             type="number"
-            min="1"
+            min={featureRanges.lot_size.minimum}
+            max={featureRanges.lot_size.maximum}
             required
             className={inputClassName}
         />
@@ -242,7 +247,8 @@ export default function EstimatorForm() {
               id="distance_to_city_center"
               name="distance_to_city_center"
               type="number"
-              min="0"
+              min={featureRanges.distance_to_city_center.minimum}
+              max={featureRanges.distance_to_city_center.maximum}
               step="0.1"
               required
               className={inputClassName}
@@ -262,8 +268,8 @@ export default function EstimatorForm() {
             id="school_rating"
             name="school_rating"
             type="number"
-            min="0"
-            max="10"
+            min={featureRanges.school_rating.minimum}
+            max={featureRanges.school_rating.maximum}
             step="0.1"
             required
             className={inputClassName}

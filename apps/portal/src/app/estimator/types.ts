@@ -8,6 +8,13 @@ export type House = {
   school_rating: number;
 };
 
+export type FeatureRange = {
+  minimum: number;
+  maximum: number;
+};
+
+export type FeatureRanges = Record<keyof House, FeatureRange>;
+
 export type EstimateHistoryItem = {
   id: string;
   house: House;

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import joblib
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 
 import pandas as pd
 from app.schemas import PredictionRequest, PredictionResponse
@@ -13,6 +13,7 @@ model_artifact = joblib.load(MODEL_PATH)
 model = model_artifact["model"]
 feature_columns = model_artifact["feature_columns"]
 metrics = model_artifact["metrics"]
+feature_ranges = model_artifact["feature_ranges"]
 
 app = FastAPI(title="Housing Price Prediction API")
 
@@ -38,6 +39,7 @@ def model_info() -> dict:
         "model_type": "LinearRegression",
         "intercept": float(model.intercept_),
         "coefficients": coefficients,
+        "feature_ranges": feature_ranges,
         "metrics": {
             "mae": float(metrics["mae"]),
             "rmse": float(metrics["rmse"]),
@@ -50,7 +52,23 @@ def predict(request: PredictionRequest) -> PredictionResponse:
     rows = []
 
     for house in request.houses:
-        rows.append(house.model_dump())
+        row = house.model_dump()
+
+        for feature, value in row.items():
+            limits = feature_ranges[feature]
+            minimum = limits["minimum"]
+            maximum = limits["maximum"]
+
+            if value < minimum or value > maximum:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=(
+                        f"{feature} must be between "
+                        f"{minimum:g} and {maximum:g}."
+                    ),
+                )
+
+        rows.append(row)
 
     input_data = pd.DataFrame(
         rows,

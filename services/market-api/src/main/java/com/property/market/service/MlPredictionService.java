@@ -1,8 +1,10 @@
 package com.property.market.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -45,5 +47,12 @@ public class MlPredictionService {
             .body(new PredictionRequest(List.of(house)))
             .retrieve()
             .body(PredictionResponse.class);
+    }
+
+    public Map<String, Object> getModelInfo() {
+        return restClient.get()
+            .uri("/model-info")
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 }

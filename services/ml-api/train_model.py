@@ -105,7 +105,7 @@ def main() -> None:
 
     print(f"Model intercept: {model.intercept_:.2f}")
     print("Model coefficients:")
-    for feature, coef in zip(FEATURE_COLUMNS, model.coef_):
+    for feature, coef in zip(FEATURE_COLUMNS, model.coef_, strict=True):
         print(f"  {feature}: {coef:.2f}")
 
     print(f"Dataset shape: {data.shape}")

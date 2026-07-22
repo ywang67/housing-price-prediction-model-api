@@ -30,6 +30,7 @@ def model_info() -> dict:
     for feature, coefficient in zip(
         feature_columns,
         model.coef_,
+        strict=True,
     ):
         coefficients[feature] = float(coefficient)
 

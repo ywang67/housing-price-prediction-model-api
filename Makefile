@@ -5,7 +5,11 @@ PYTHON := $(VENV_DIR)/bin/python
 ML_SERVICE_DIR := services/ml-api
 ML_IMAGE_NAME := housing-price-api
 
-.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run
+PORTAL_DIR := apps/portal
+
+PROPERTY_SERVICE_DIR := services/property-api
+
+.PHONY: venv ml-install ml-train ml-run ml-docker-build ml-docker-run portal-install portal-run portal-build portal-lint property-install property-run
 
 venv: $(PYTHON)
 
@@ -32,3 +36,26 @@ ml-docker-build:
 
 ml-docker-run:
 	docker run --rm -p 8000:8000 $(ML_IMAGE_NAME)
+
+# Portal app targets
+portal-install:
+	npm --prefix $(PORTAL_DIR) install
+
+portal-run:
+	npm --prefix $(PORTAL_DIR) run dev
+
+portal-build:
+	npm --prefix $(PORTAL_DIR) run build
+
+portal-lint:
+	npm --prefix $(PORTAL_DIR) run lint
+
+# property-api targets
+property-install: $(PYTHON)
+	$(PYTHON) -m pip install -r $(PROPERTY_SERVICE_DIR)/requirements.txt
+
+property-run: $(PYTHON)
+	$(PYTHON) -m uvicorn app.main:app \
+		--app-dir $(PROPERTY_SERVICE_DIR) \
+		--reload \
+		--port 8001

@@ -14,6 +14,7 @@ export default function useEstimateHistory() {
     useState<EstimateHistoryItem[]>([]);
 
   useEffect(() => {
+    // Defer the state update to avoid an unnecessary synchronous re-render inside the effect.
     const timeoutId = window.setTimeout(() => {
         const storedHistory =
         localStorage.getItem(STORAGE_KEY);

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 CURRENT_YEAR = date.today().year
 
 
-class HouseFeatures(BaseModel):
+class PropertyFeatures(BaseModel):
     square_footage: float = Field(gt=0)
     bedrooms: int = Field(gt=0)
     bathrooms: float = Field(gt=0)
@@ -16,9 +16,9 @@ class HouseFeatures(BaseModel):
     school_rating: float = Field(ge=0, le=10)
 
 
-class PredictionRequest(BaseModel):
-    houses: list[HouseFeatures] = Field(min_length=1)
+class EstimateRequest(BaseModel):
+    houses: list[PropertyFeatures] = Field(min_length=1)
 
-class PredictionResponse(BaseModel):
+
+class EstimateResponse(BaseModel):
     predictions: list[float]
-    

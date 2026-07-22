@@ -25,3 +25,9 @@ dist/
 
 # macOS
 .DS_Store
+
+# IDE
+.vscode/
+
+# Java build output
+target/

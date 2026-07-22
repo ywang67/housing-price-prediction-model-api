@@ -30,6 +30,7 @@ def model_info() -> dict:
     for feature, coefficient in zip(
         feature_columns,
         model.coef_,
+        strict=True,
     ):
         coefficients[feature] = float(coefficient)
 
@@ -63,4 +64,4 @@ def predict(request: PredictionRequest) -> PredictionResponse:
     for prediction in model_predictions:
         prediction_values.append(round(float(prediction), 2))
 
-    return {"predictions": prediction_values}
+    return PredictionResponse(predictions=prediction_values)

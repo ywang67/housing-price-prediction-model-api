@@ -10,9 +10,12 @@ from sklearn.metrics import (
 
 import joblib
 
-DATA_PATH = Path(__file__).resolve().parent / "House Price Dataset.csv"
+SERVICE_ROOT = Path(__file__).resolve().parent
+REPOSITORY_ROOT = SERVICE_ROOT.parent.parent
+
+DATA_PATH = REPOSITORY_ROOT / "data" / "House Price Dataset.csv"
 MODEL_PATH = (
-    Path(__file__).resolve().parent
+    SERVICE_ROOT
     / "artifacts"
     / "housing_price_model.joblib"
 )
@@ -102,7 +105,7 @@ def main() -> None:
 
     print(f"Model intercept: {model.intercept_:.2f}")
     print("Model coefficients:")
-    for feature, coef in zip(FEATURE_COLUMNS, model.coef_):
+    for feature, coef in zip(FEATURE_COLUMNS, model.coef_, strict=True):
         print(f"  {feature}: {coef:.2f}")
 
     print(f"Dataset shape: {data.shape}")

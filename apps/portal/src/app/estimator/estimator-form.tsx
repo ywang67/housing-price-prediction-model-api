@@ -3,6 +3,9 @@ import { useState } from "react";
 
 export default function EstimatorForm() {
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [prediction, setPrediction] = useState<number | null>(null);
 
@@ -53,20 +56,40 @@ export default function EstimatorForm() {
       return;
     }
 
-    const response = await fetch("/api/estimates", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        houses: [house],
-      }),
-    });
+    setIsLoading(true);
+    setRequestError(null);
+    setPrediction(null);
 
-    const result: { predictions: number[] } =
-    await response.json();
+    try {
+      const response = await fetch("/api/estimates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          houses: [house],
+        }),
+      });
 
-    setPrediction(result.predictions[0]);
+      const result: {
+        predictions?: number[];
+        detail?: string;
+      } = await response.json();
+
+      if (!response.ok || result.predictions === undefined) {
+        throw new Error(result.detail ?? "Prediction failed.");
+      }
+
+      setPrediction(result.predictions[0]);
+    } catch (error) {
+      setRequestError(
+        error instanceof Error
+          ? error.message
+          : "Prediction failed.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const fieldClassName = "flex flex-col gap-2";
@@ -221,9 +244,19 @@ export default function EstimatorForm() {
         )}
       </div>
 
-      <button type="submit" className="cursor-pointer rounded-lg bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500">
-        Estimate Value
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="cursor-pointer rounded-lg bg-blue-500 px-4 py-2 font-medium text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isLoading ? "Estimating..." : "Estimate Value"}
       </button>
+
+      {requestError && (
+        <p className="text-red-600 sm:col-span-2" role="alert">
+          {requestError}
+        </p>
+      )}
 
       {prediction !== null && (
         <section className="rounded-lg border border-green-200 bg-green-50 p-5 sm:col-span-2">

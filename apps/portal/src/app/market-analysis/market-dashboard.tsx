@@ -67,7 +67,7 @@ export default function MarketDashboard({
 
         <WhatIfAnalysis
           properties={properties}
-          squareFootageRange={featureRanges.square_footage}
+          featureRanges={featureRanges}
         />
 
         <div className="mb-6 grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-3">

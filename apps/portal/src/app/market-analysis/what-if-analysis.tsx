@@ -3,14 +3,48 @@
 import { useState } from "react";
 
 import type { MarketProperty } from "./types";
-import type { FeatureRange } from "../estimator/types";
+import type { FeatureRanges, House } from "../estimator/types";
+
+type Scenario = Record<keyof House, string>;
+
+const fields: {
+  key: keyof House;
+  label: string;
+  step: string;
+}[] = [
+  { key: "square_footage", label: "Square Footage", step: "1" },
+  { key: "bedrooms", label: "Bedrooms", step: "1" },
+  { key: "bathrooms", label: "Bathrooms", step: "0.5" },
+  { key: "year_built", label: "Year Built", step: "1" },
+  { key: "lot_size", label: "Lot Size", step: "1" },
+  {
+    key: "distance_to_city_center",
+    label: "Distance to City Center",
+    step: "0.1",
+  },
+  { key: "school_rating", label: "School Rating", step: "0.1" },
+];
+
+function createScenario(property?: MarketProperty): Scenario {
+  return {
+    square_footage: String(property?.squareFootage ?? ""),
+    bedrooms: String(property?.bedrooms ?? ""),
+    bathrooms: String(property?.bathrooms ?? ""),
+    year_built: String(property?.yearBuilt ?? ""),
+    lot_size: String(property?.lotSize ?? ""),
+    distance_to_city_center: String(
+      property?.distanceToCityCenter ?? "",
+    ),
+    school_rating: String(property?.schoolRating ?? ""),
+  };
+}
 
 export default function WhatIfAnalysis({
   properties,
-  squareFootageRange,
+  featureRanges,
 }: {
   properties: MarketProperty[];
-  squareFootageRange: FeatureRange;
+  featureRanges: FeatureRanges;
 }) {
   const [selectedId, setSelectedId] = useState(
     properties[0]?.id ?? 0,
@@ -20,8 +54,8 @@ export default function WhatIfAnalysis({
     (property) => property.id === selectedId,
   );
 
-  const [squareFootage, setSquareFootage] = useState(
-    String(selectedProperty?.squareFootage ?? ""),
+  const [scenario, setScenario] = useState<Scenario>(() =>
+    createScenario(properties[0]),
   );
 
   const [prediction, setPrediction] =
@@ -36,10 +70,9 @@ export default function WhatIfAnalysis({
     );
 
     setSelectedId(id);
-    setSquareFootage(
-      String(property?.squareFootage ?? ""),
-    );
+    setScenario(createScenario(property));
     setPrediction(null);
+    setError(null);
   }
 
   async function handleSubmit(
@@ -51,16 +84,20 @@ export default function WhatIfAnalysis({
       return;
     }
 
-    const requestedSquareFootage = Number(squareFootage);
+    const requestBody = Object.fromEntries(
+      Object.entries(scenario).map(([key, value]) => [key, Number(value)]),
+    ) as House;
 
-    if (
-      requestedSquareFootage < squareFootageRange.minimum ||
-      requestedSquareFootage > squareFootageRange.maximum
-    ) {
-      setError(
-        `Square footage must be between ${squareFootageRange.minimum} and ${squareFootageRange.maximum}.`,
-      );
-      return;
+    for (const field of fields) {
+      const range = featureRanges[field.key];
+      const value = requestBody[field.key];
+
+      if (value < range.minimum || value > range.maximum) {
+        setError(
+          `${field.label} must be between ${range.minimum} and ${range.maximum}.`,
+        );
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -72,16 +109,7 @@ export default function WhatIfAnalysis({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          square_footage: requestedSquareFootage,
-          bedrooms: selectedProperty.bedrooms,
-          bathrooms: selectedProperty.bathrooms,
-          year_built: selectedProperty.yearBuilt,
-          lot_size: selectedProperty.lotSize,
-          distance_to_city_center:
-            selectedProperty.distanceToCityCenter,
-          school_rating: selectedProperty.schoolRating,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const result: {
@@ -117,7 +145,8 @@ export default function WhatIfAnalysis({
 
       <form
         onSubmit={handleSubmit}
-        className="mt-5 grid gap-4 md:grid-cols-3"
+        noValidate
+        className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
       >
         <select
           value={selectedId}
@@ -133,23 +162,35 @@ export default function WhatIfAnalysis({
           ))}
         </select>
 
-        <input
-          type="number"
-          min={squareFootageRange.minimum}
-          max={squareFootageRange.maximum}
-          required
-          value={squareFootage}
-          onChange={(event) =>
-            setSquareFootage(event.target.value)
-          }
-          aria-label="What-if square footage"
-          className="rounded-lg border border-slate-300 px-3 py-2"
-        />
+        {fields.map((field) => {
+          const range = featureRanges[field.key];
+
+          return (
+            <label key={field.key} className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+              {field.label}
+              <input
+                type="number"
+                min={range.minimum}
+                max={range.maximum}
+                step={field.step}
+                required
+                value={scenario[field.key]}
+                onChange={(event) =>
+                  setScenario((current) => ({
+                    ...current,
+                    [field.key]: event.target.value,
+                  }))
+                }
+                className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+              />
+            </label>
+          );
+        })}
 
         <button
           type="submit"
           disabled={isLoading}
-          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="cursor-pointer rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 lg:col-span-4"
         >
           {isLoading ? "Calculating..." : "Run What-if"}
         </button>
